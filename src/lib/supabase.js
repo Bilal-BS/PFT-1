@@ -260,6 +260,7 @@ class MockSupabase {
 
 import { createClient } from '@supabase/supabase-js'
 
+// Read Supabase connection values from environment variables
 const realUrl = import.meta.env.VITE_SUPABASE_URL;
 const realKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
