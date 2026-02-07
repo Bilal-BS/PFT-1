@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Wallet, MoreHorizontal, TrendingUp, TrendingDown, PieChart as PieIcon, ArrowUpRight, CheckCircle } from 'lucide-react'
 import { formatCurrency } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 
