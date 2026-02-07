@@ -1,0 +1,29 @@
+
+> pft-app@0.0.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 2467 modules transformed.
+[31m✗[39m Build failed in 8.62s
+[31merror during build:
+[31msrc/components/dashboard/CustomDashboard.jsx (3:21): "WidthProvider" is not exported by "node_modules/react-grid-layout/dist/index.mjs", imported by "src/components/dashboard/CustomDashboard.jsx".[31m
+file: [36mD:/PFT/src/components/dashboard/CustomDashboard.jsx:3:21[31m
+[33m
+1: 
+2: import { useState, useEffect } from 'react'
+3: import { Responsive, WidthProvider } from 'react-grid-layout'
+                        ^
+4: // import 'react-grid-layout/css/styles.css'
+5: // import 'react-resizable/css/styles.css'
+[31m
+    at getRollupError (file:///D:/PFT/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at error (file:///D:/PFT/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
+    at Module.error (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:17040:16)
+    at Module.traceVariable (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:17452:29)
+    at ModuleScope.findVariable (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:15070:39)
+    at Identifier.bind (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:5447:40)
+    at CallExpression.bind (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:2829:23)
+    at CallExpression.bind (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:12179:15)
+    at VariableDeclarator.bind (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:2829:23)
+    at VariableDeclaration.bind (file:///D:/PFT/node_modules/rollup/dist/es/shared/node-entry.js:2825:28)[39m
