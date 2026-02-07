@@ -48,7 +48,10 @@ export default function AddTransactionModal({ isOpen, onClose, onTransactionAdde
             transaction_date: date
         })
 
-        if (!error) {
+        if (error) {
+            console.error('Transaction creation error:', error)
+            alert(`Error adding transaction: ${error.message}`)
+        } else {
             onTransactionAdded()
             onClose()
             setAmount('')

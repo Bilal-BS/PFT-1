@@ -23,7 +23,8 @@ export default function CreateAccountModal({ isOpen, onClose, onAdded }) {
         })
 
         if (error) {
-            alert("Error creating account")
+            console.error("Account creation error:", error)
+            alert(`Error creating account: ${error.message}`)
         } else {
             onAdded()
             onClose()

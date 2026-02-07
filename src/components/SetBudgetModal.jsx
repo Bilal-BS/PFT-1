@@ -22,7 +22,8 @@ export default function SetBudgetModal({ isOpen, onClose, onAdded }) {
         })
 
         if (error) {
-            alert("Error setting budget")
+            console.error("Budget creation error:", error)
+            alert(`Error setting budget: ${error.message}`)
         } else {
             onAdded()
             onClose()

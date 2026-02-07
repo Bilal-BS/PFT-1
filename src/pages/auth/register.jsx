@@ -37,11 +37,33 @@ export default function Register() {
             return
         }
 
-        if (data.session) {
-            navigate('/')
+        if (data.user) {
+            // Explicitly create profile (backup if trigger didn't fire)
+            try {
+                const { error: profileError } = await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    full_name: name,
+                    role: 'user',
+                    base_currency: 'LKR'
+                })
+
+                if (profileError && profileError.code !== '23505') {
+                    // 23505 = unique constraint (profile already exists, which is fine)
+                    console.error('Profile creation error:', profileError)
+                }
+                // Trigger will create user_status, so no need to do it manually
+            } catch (err) {
+                console.error('Post-registration setup error:', err)
+            }
+
+            if (data.session) {
+                navigate('/')
+            } else {
+                setError("Please check your email for the confirmation link.")
+                setLoading(false)
+            }
         } else {
-            // Validation email sent case
-            setError("Please check your email for the confirmation link (if email confirmation is enabled).")
+            setError("Registration failed. Please try again.")
             setLoading(false)
         }
     }
