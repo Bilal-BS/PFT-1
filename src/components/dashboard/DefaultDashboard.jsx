@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { formatCurrency } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 
@@ -9,7 +10,7 @@ const DefaultDashboard = () => {
   const [accounts, setAccounts] = useState([]);
   const [currency, setCurrency] = useState('LKR');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
