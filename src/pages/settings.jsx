@@ -602,6 +602,15 @@ export default function Settings() {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-[9px] font-black uppercase text-slate-500 tracking-widest mb-2">Email Address (Username)</label>
+                                        <input
+                                            type="text"
+                                            value={profile?.email || ''} // Using profile state directly as email is not editable here
+                                            disabled
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 font-bold text-slate-400 outline-none cursor-not-allowed"
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-[9px] font-black uppercase text-slate-500 tracking-widest mb-2">Professional Role</label>
                                         <input
                                             type="text"

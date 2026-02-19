@@ -120,6 +120,63 @@ export default function SuperAdmin() {
         fetchAdminData()
     }
 
+    const handleApproveRequest = async (request) => {
+        const confirmApi = window.confirm(`Approve upgrade to ${request.plans?.name} for ${request.profiles?.full_name}?`)
+        if (!confirmApi) return
+
+        setLoading(true)
+        try {
+            // 1. Update/Create Subscription
+            const { error: subError } = await supabase.from('subscriptions')
+                .upsert({
+                    user_id: request.user_id,
+                    plan_id: request.plan_id,
+                    status: 'active',
+                    current_period_start: new Date().toISOString(),
+                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
+                    updated_at: new Date().toISOString()
+                })
+
+            if (subError) throw subError
+
+            // 2. Update Request Status
+            const { error: reqError } = await supabase.from('subscription_requests')
+                .update({ status: 'approved', resolved_at: new Date().toISOString() })
+                .eq('id', request.id)
+
+            if (reqError) throw reqError
+
+            alert("Request Approved & Subscription Updated!")
+            fetchAdminData()
+        } catch (error) {
+            console.error("Approval Error:", error)
+            alert("Failed to approve request: " + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleRejectRequest = async (requestId) => {
+        if (!window.confirm("Reject this request?")) return
+
+        setLoading(true)
+        try {
+            const { error } = await supabase.from('subscription_requests')
+                .update({ status: 'rejected', resolved_at: new Date().toISOString() })
+                .eq('id', requestId)
+
+            if (error) throw error
+
+            alert("Request Rejected.")
+            fetchAdminData()
+        } catch (error) {
+            console.error("Rejection Error:", error)
+            alert("Failed to reject: " + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     // Mock Chart Data
     const revenueData = [
         { name: 'Jan', value: 4000 }, { name: 'Feb', value: 3000 }, { name: 'Mar', value: 5000 },
@@ -234,8 +291,20 @@ export default function SuperAdmin() {
                                                 <p className="text-sm font-bold text-slate-500">Requesting <span className="text-indigo-600">{req.plans?.name}</span></p>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button className="p-3 bg-white text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"><XCircle size={18} /></button>
-                                                <button className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"><CheckCircle2 size={18} /></button>
+                                                <button
+                                                    onClick={() => handleRejectRequest(req.id)}
+                                                    className="p-3 bg-white text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                                    title="Reject Request"
+                                                >
+                                                    <XCircle size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleApproveRequest(req)}
+                                                    className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                                                    title="Approve Request"
+                                                >
+                                                    <CheckCircle2 size={18} />
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
