@@ -126,16 +126,30 @@ export default function SuperAdmin() {
 
         setLoading(true)
         try {
-            // 1. Update/Create Subscription
+            // 1. Check for existing subscription
+            const { data: existingSub } = await supabase
+                .from('subscriptions')
+                .select('id')
+                .eq('user_id', request.user_id)
+                .maybeSingle()
+
+            // 2. Update/Create Subscription
+            const subData = {
+                user_id: request.user_id,
+                plan_id: request.plan_id,
+                status: 'active',
+                current_period_start: new Date().toISOString(),
+                current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
+                updated_at: new Date().toISOString()
+            }
+
+            // If exists, attach ID to force update
+            if (existingSub?.id) {
+                subData.id = existingSub.id
+            }
+
             const { error: subError } = await supabase.from('subscriptions')
-                .upsert({
-                    user_id: request.user_id,
-                    plan_id: request.plan_id,
-                    status: 'active',
-                    current_period_start: new Date().toISOString(),
-                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
-                    updated_at: new Date().toISOString()
-                })
+                .upsert(subData)
 
             if (subError) throw subError
 
