@@ -1,5 +1,5 @@
--- 💥 NEW PLANS SEED SCRIPT (4 TIERS)
--- This script resets all plans and seeds the new 4 tiers provided by the user.
+-- 💥 NEW PLANS SEED SCRIPT (4 TIERS - FEATURE RICH)
+-- This script resets all plans and seeds the new 4 tiers with detailed feature flags.
 -- RUN THIS IN SUPABASE SQL EDITOR
 
 -- 1. Clear existing data (Order matters because of Foreign Keys!)
@@ -19,6 +19,12 @@ insert into plans (name, price, currency, features) values
         "budget_overview": true,
         "max_accounts": 1,
         "charts": "limited",
+        "loans": false,
+        "zakat_calculator": false,
+        "investments": false,
+        "pdc_management": false,
+        "assets_management": false,
+        "family_sync": false,
         "description": "Perfect for people just getting started."
     }'
 ),
@@ -35,6 +41,12 @@ insert into plans (name, price, currency, features) values
         "monthly_goals": true,
         "bill_reminders": true,
         "charts": "basic",
+        "loans": true,
+        "zakat_calculator": false,
+        "investments": false,
+        "pdc_management": false,
+        "assets_management": false,
+        "family_sync": false,
         "description": "Great for regular budgeters."
     }'
 ),
@@ -56,6 +68,12 @@ insert into plans (name, price, currency, features) values
         "trend_reports": true,
         "export_data": true,
         "custom_alerts": true,
+        "loans": true,
+        "zakat_calculator": true,
+        "investments": true,
+        "pdc_management": true,
+        "assets_management": false,
+        "family_sync": false,
         "description": "For users who want deeper insights and automation."
     }'
 ),
@@ -82,6 +100,12 @@ insert into plans (name, price, currency, features) values
         "business_categories": true,
         "priority_support": true,
         "integrations": true,
+        "loans": true,
+        "zakat_calculator": true,
+        "investments": true,
+        "pdc_management": true,
+        "assets_management": true,
+        "family_sync": true,
         "description": "Best for freelancers and small business owners."
     }'
 );

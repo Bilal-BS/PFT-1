@@ -36,6 +36,8 @@ export default function ModernSidebar({ isCollapsed, onToggle }) {
         fetchUserData();
     }, []);
 
+    const features = subscription?.plans?.features || {};
+
     const menuItems = [
         {
             group: 'Core', items: [
@@ -47,24 +49,24 @@ export default function ModernSidebar({ isCollapsed, onToggle }) {
         },
         {
             group: 'Operations', items: [
-                { name: 'PDC Vault', path: '/pdcs', icon: <Landmark size={20} /> },
+                { name: 'PDC Vault', path: '/pdcs', icon: <Landmark size={20} />, locked: !features.pdc_management },
                 { name: 'Budgets', path: '/budgets', icon: <PieChart size={20} /> },
-                { name: 'Loans', path: '/loans', icon: <Wallet size={20} /> },
+                { name: 'Loans', path: '/loans', icon: <Wallet size={20} />, locked: !features.loans },
                 { name: 'Currencies', path: '/currencies', icon: <Globe size={20} /> },
             ]
         },
         {
             group: 'Treasury', items: [
-                { name: 'Assets', path: '/assets', icon: <Briefcase size={20} /> },
-                { name: 'Portfolios', path: '/investments', icon: <PieChart size={20} /> },
+                { name: 'Assets', path: '/assets', icon: <Briefcase size={20} />, locked: !features.assets_management },
+                { name: 'Portfolios', path: '/investments', icon: <PieChart size={20} />, locked: !features.investments },
             ]
         },
         {
             group: 'Intelligence', items: [
-                { name: 'AI Insights', path: '/reports', icon: <PieChart size={20} /> },
-                { name: 'Tax Engine', path: '/taxes', icon: <Landmark size={20} /> },
-                { name: 'Zakat Logic', path: '/zakat', icon: <Sparkles size={20} /> },
-                { name: 'Family Shield', path: '/family', icon: <ShieldCheck size={20} /> },
+                { name: 'AI Insights', path: '/reports', icon: <PieChart size={20} />, locked: !features.smart_insights },
+                { name: 'Tax Engine', path: '/taxes', icon: <Landmark size={20} />, locked: !features.tax_tools },
+                { name: 'Zakat Logic', path: '/zakat', icon: <Sparkles size={20} />, locked: !features.zakat_calculator },
+                { name: 'Family Shield', path: '/family', icon: <ShieldCheck size={20} />, locked: !features.family_sync },
                 { name: 'Platform Prefs', path: '/settings', icon: <Settings size={20} /> },
             ]
         },
@@ -114,17 +116,27 @@ export default function ModernSidebar({ isCollapsed, onToggle }) {
                         <div className="space-y-1">
                             {section.items.map((item) => {
                                 const isActive = location.pathname === item.path;
+                                const isLocked = item.locked;
+
                                 return (
                                     <Link
                                         key={item.path}
-                                        to={item.path}
-                                        className={`flex items-center h-12 rounded-2xl transition-all relative group ${isCollapsed ? 'justify-center' : 'px-4 gap-4'} ${isActive ? 'nav-link-active' : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--sidebar-active)]'}`}
+                                        to={isLocked ? '/billing' : item.path}
+                                        onClick={(e) => {
+                                            if (isLocked) {
+                                                // Optional: Add toast notification here
+                                            }
+                                        }}
+                                        className={`flex items-center h-12 rounded-2xl transition-all relative group ${isCollapsed ? 'justify-center' : 'px-4 gap-4'} ${isActive ? 'nav-link-active' : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--sidebar-active)]'} ${isLocked ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : ''}`}
                                     >
                                         <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                                             {item.icon}
                                         </div>
                                         {!isCollapsed && (
-                                            <span className="text-[13px] font-bold tracking-tight">{item.name}</span>
+                                            <span className="text-[13px] font-bold tracking-tight flex items-center gap-2">
+                                                {item.name}
+                                                {isLocked && <span className="p-0.5 bg-amber-500/10 text-amber-500 rounded"><Settings size={10} className="stroke-2" /></span>}
+                                            </span>
                                         )}
                                         {isActive && (
                                             <motion.div
