@@ -56,8 +56,8 @@ export default function SuperAdmin() {
             const statuses = statusesRes.data || []
             const subs = subsRes.data || []
 
-            // Combine user data
-            const combinedUsers = profiles.filter(p => p.role !== 'superadmin').map(p => {
+            // Combine user data (Show ALL users, including admins for now to ensure visibility)
+            const combinedUsers = profiles.map(p => {
                 const status = statuses.find(s => s.user_id === p.id) || { is_active: true }
                 const sub = subs.find(s => s.user_id === p.id) || { status: 'none', plan_id: 'plan-free' }
                 return { ...p, ...status, ...sub }
@@ -70,8 +70,9 @@ export default function SuperAdmin() {
             const totalSubs = subs.filter(s => s.status === 'active').length
             const expiredSubs = subs.filter(s => s.status === 'expired').length
 
-            // Mock Revenue Calculation (real app would sum transaction history)
+            // Real Revenue Calculation
             const revenue = subs.reduce((acc, sub) => {
+                if (sub.status !== 'active') return acc;
                 const plan = plansRes.data.find(p => p.id === sub.plan_id)
                 return acc + (plan?.price || 0)
             }, 0)
@@ -79,12 +80,16 @@ export default function SuperAdmin() {
             setStats({
                 totalUsers: combinedUsers.length,
                 activeUsers,
-                newUsers: combinedUsers.filter(u => new Date(u.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, // Last 30 days
+                newUsers: combinedUsers.filter(u => new Date(u.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
                 totalSubs,
                 revenue,
                 expiredSubs,
-                expiringSoon: 5, // Mock
-                growth: 12.5 // Mock
+                expiringSoon: subs.filter(s => {
+                    if (!s.current_period_end) return false;
+                    const daysLeft = (new Date(s.current_period_end) - new Date()) / (1000 * 60 * 60 * 24);
+                    return daysLeft > 0 && daysLeft <= 7;
+                }).length,
+                growth: 12.5 // Placeholder until chart logic handles it
             })
 
         } catch (error) {
@@ -191,16 +196,62 @@ export default function SuperAdmin() {
         }
     }
 
-    // Mock Chart Data
-    const revenueData = [
-        { name: 'Jan', value: 4000 }, { name: 'Feb', value: 3000 }, { name: 'Mar', value: 5000 },
-        { name: 'Apr', value: 4500 }, { name: 'May', value: 6000 }, { name: 'Jun', value: 5500 },
-    ]
+    // Dynamic Chart Data Calculation
+    const getRevenueData = () => {
+        const last6Months = Array.from({ length: 6 }, (_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            return {
+                name: d.toLocaleString('default', { month: 'short' }),
+                month: d.getMonth(),
+                year: d.getFullYear(),
+                value: 0
+            };
+        }).reverse();
 
-    const growthData = [
-        { name: 'Jan', users: 120 }, { name: 'Feb', users: 132 }, { name: 'Mar', users: 150 },
-        { name: 'Apr', users: 180 }, { name: 'May', users: 220 }, { name: 'Jun', users: 250 },
-    ]
+        const filledData = last6Months.map(period => {
+            const monthlyRevenue = users.reduce((acc, user) => {
+                const subDate = new Date(user.created_at);
+                const plan = plans.find(p => p.id === user.plan_id);
+                if (!plan) return acc;
+
+                if (subDate.getMonth() <= period.month && subDate.getFullYear() <= period.year && user.status === 'active') {
+                    return acc + (plan.price || 0);
+                }
+                return acc;
+            }, 0);
+
+            return { ...period, value: monthlyRevenue };
+        });
+
+        return filledData;
+    }
+
+    const getGrowthData = () => {
+        const last6Months = Array.from({ length: 6 }, (_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            return {
+                name: d.toLocaleString('default', { month: 'short' }),
+                month: d.getMonth(),
+                year: d.getFullYear(),
+                users: 0
+            };
+        }).reverse();
+
+        const filledData = last6Months.map(period => {
+            const count = users.filter(u => {
+                const d = new Date(u.created_at);
+                return d.getMonth() <= period.month && d.getFullYear() <= period.year;
+            }).length;
+            return { ...period, users: count };
+        });
+
+        return filledData;
+    }
+
+    const revenueData = getRevenueData();
+    const growthData = getGrowthData();
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen bg-slate-50">
