@@ -15,17 +15,33 @@ export default function Billing() {
     }, [])
 
     const fetchBillingData = async () => {
-        setLoading(true)
-        const { data: { user } } = await supabase.auth.getUser()
+        try {
+            setLoading(true)
+            const { data: { user } } = await supabase.auth.getUser()
 
-        const [subRes, plansRes] = await Promise.all([
-            supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).single(),
-            supabase.from('plans').select('*').order('price', { ascending: true })
-        ])
+            if (!user) {
+                console.warn("User not authenticated")
+                setLoading(false)
+                return
+            }
 
-        setSubscription(subRes.data)
-        setPlans(plansRes.data || [])
-        setLoading(false)
+            const [subRes, plansRes, reqRes] = await Promise.all([
+                supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).maybeSingle(),
+                supabase.from('plans').select('*').order('price', { ascending: true }),
+                supabase.from('subscription_requests').select('*').eq('user_id', user.id).eq('status', 'pending').maybeSingle()
+            ])
+
+            setSubscription(subRes.data)
+            setPlans(plansRes.data || [])
+            if (reqRes.data) {
+                setUpgrading(true) // Reuse state to lock UI
+                // Optionally store the pending request to show which plan
+            }
+        } catch (error) {
+            console.error("Billing fetch error:", error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const upgradePlan = async (planId) => {
@@ -48,13 +64,18 @@ export default function Billing() {
             alert("Upgrade request sent! A Superadmin will approve it shortly. 🎉")
             fetchBillingData()
         } catch (e) {
-            alert("Failed to send upgrade request.")
+            console.error(e)
+            alert("Failed to send upgrade request. Please try again.")
         } finally {
             setUpgrading(false)
         }
     }
 
-    if (loading) return null
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-[600px]">
+            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full" />
+        </div>
+    )
 
     return (
         <div className="p-4 lg:p-8 space-y-8 max-w-[1600px]">
@@ -71,11 +92,21 @@ export default function Billing() {
                     </div>
                     <div>
                         <span className="text-xs font-black text-indigo-200 uppercase tracking-[0.3em]">Active Tier</span>
-                        <h2 className="text-4xl font-black">{subscription?.plans?.name || 'Free'} Member</h2>
+                        <h2 className="text-4xl font-black">{subscription?.plans?.name || 'Starter'} Member</h2>
                     </div>
                 </div>
                 <div className="text-center md:text-right relative z-10">
-                    <p className="text-indigo-100 font-bold mb-4">Membership active since {new Date(subscription?.start_date).toLocaleDateString()}</p>
+                    {upgrading ? (
+                        <div className="bg-amber-500/20 border border-amber-500/50 rounded-2xl p-4 mb-4">
+                            <p className="text-amber-100 font-bold flex items-center gap-2">
+                                <span className="animate-pulse">●</span> Pending Approval
+                            </p>
+                        </div>
+                    ) : subscription ? (
+                        <p className="text-indigo-100 font-bold mb-4">Membership active since {new Date(subscription.start_date).toLocaleDateString()}</p>
+                    ) : (
+                        <p className="text-indigo-100 font-bold mb-4">You are on the free Starter plan.</p>
+                    )}
                     <div className="flex gap-4">
                         <button className="bg-white text-indigo-600 px-8 py-3 rounded-2xl font-black shadow-xl hover:bg-slate-50 transition">Billing Portal</button>
                         <button className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-2xl font-black backdrop-blur-sm hover:bg-white/20 transition">Invoices</button>
@@ -94,10 +125,10 @@ export default function Billing() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {plans.map(plan => (
                     <div key={plan.id} className={`bg-white p-10 rounded-[48px] border-2 transition-all group relative ${subscription?.plan_id === plan.id ? 'border-indigo-600 shadow-2xl' : 'border-slate-50 shadow-sm hover:shadow-xl hover:border-indigo-100'}`}>
-                        {plan.name === 'Ultimate' && (
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg">
+                        {plan.name === 'Halal Wealth' && (
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg">
                                 <Star size={12} fill="white" />
-                                Recommended
+                                Recommended for You
                             </div>
                         )}
 
@@ -107,18 +138,18 @@ export default function Billing() {
                         </div>
 
                         <div className="mb-12 font-black text-slate-900">
-                            <span className="text-5xl">{formatCurrency(plan.price, plan.currency || 'LKR')}</span>
+                            <span className="text-5xl">{formatCurrency(plan.price, plan.currency || 'USD')}</span>
                             <span className="text-sm text-slate-400 ml-1">/mo</span>
                         </div>
 
                         <div className="space-y-4 mb-12">
                             {Object.entries(plan.features || {}).map(([key, val]) => (
                                 <div key={key} className="flex items-start gap-3 text-slate-600">
-                                    <div className="mt-1 p-1 bg-green-50 rounded-lg text-green-600 flex-shrink-0">
+                                    <div className="mt-1 p-1 bg-emerald-50 rounded-lg text-emerald-600 flex-shrink-0">
                                         <CheckCircle size={14} />
                                     </div>
                                     <span className="text-sm font-bold capitalize leading-relaxed break-words">
-                                        {val === true ? 'Unlimited' : val} {key.replace(/_/g, ' ')}
+                                        {val === true ? 'Unlimited' : val.toString()} {key.replace(/_/g, ' ')}
                                     </span>
                                 </div>
                             ))}

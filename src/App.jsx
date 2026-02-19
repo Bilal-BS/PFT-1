@@ -15,6 +15,9 @@ import Currencies from './pages/currencies'
 import PDCs from './pages/pdcs'
 import Family from './pages/family'
 import AppLauncher from './pages/launcher'
+import Taxes from './pages/taxes'
+import Assets from './pages/assets'
+import Zakat from './pages/zakat'
 import SuperAdmin from './pages/admin/superadmin'
 import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './components/MainLayout'
@@ -42,6 +45,9 @@ function App() {
           <Route path="/billing" element={<MainLayout><Billing /></MainLayout>} />
           <Route path="/family" element={<MainLayout><Family /></MainLayout>} />
           <Route path="/reports" element={<MainLayout><Reports /></MainLayout>} />
+          <Route path="/taxes" element={<MainLayout><Taxes /></MainLayout>} />
+          <Route path="/assets" element={<MainLayout><Assets /></MainLayout>} />
+          <Route path="/zakat" element={<MainLayout><Zakat /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
         </Route>
 

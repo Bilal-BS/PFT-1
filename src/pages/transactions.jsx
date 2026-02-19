@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { formatCurrency } from '../lib/utils'
 import { Plus, Search, Filter, ArrowUpRight, ArrowDownRight, Trash2, Calendar, Tag, Wallet } from 'lucide-react'
@@ -7,13 +8,19 @@ import AddTransactionModal from '../components/AddTransactionModal'
 import PageHeader from '../components/PageHeader'
 
 export default function Transactions() {
+    const [searchParams] = useSearchParams()
     const [transactions, setTransactions] = useState([])
     const [accounts, setAccounts] = useState([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
-    const [filterType, setFilterType] = useState('all') // all, income, expense
+    const [filterType, setFilterType] = useState(searchParams.get('tab') || 'all') // all, income, expense
     const [currency, setCurrency] = useState('LKR')
+
+    useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab) setFilterType(tab)
+    }, [searchParams])
 
     useEffect(() => {
         fetchTransactionData()
@@ -154,6 +161,7 @@ export default function Transactions() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onTransactionAdded={fetchTransactionData}
+                defaultType={filterType === 'all' ? 'expense' : filterType}
             />
         </div >
     )

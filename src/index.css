@@ -1,60 +1,285 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:wght@100..900&family=Roboto:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  /* Core Brand Tokens */
   --primary: #5551FF;
-  --primary-glow: rgba(85, 81, 255, 0.15);
-  --success: #10B981;
-  --danger: #EF4444;
-  --warning: #F59E0B;
+  --accent: #5551FF;
+  --accent-soft: rgba(85, 81, 255, 0.1);
+  --accent-glow: rgba(85, 81, 255, 0.2);
+
+  /* Layout Base */
   --bg-app: #F8FAFC;
+  --bg-sidebar: #FFFFFF;
+  --sidebar-border: #E2E8F0;
   --card-bg: #FFFFFF;
   --text-main: #0F172A;
   --text-muted: #64748B;
-  --radius-xl: 24px;
+  --sidebar-active: #F1F5F9;
+
+  /* Structural Morphing Tokens - Default (Modern Minimal) */
+  --radius-app: 24px;
+  --font-app: 'Outfit', sans-serif;
+  --ui-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ui-border: 1px solid var(--sidebar-border);
+  --ui-depth: none;
+  --ui-blur: none;
+  --ui-glow: none;
+
+  --transition-speed: 0.5s;
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
-.dark {
-  --bg-app: #020617;
-  --card-bg: #0F172A;
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
+/* 📱 1. iOS Glass (Frosted Glassmorphism) */
+[data-theme='ios'] {
+  --bg-app: #F2F2F7;
+  --bg-sidebar: rgba(255, 255, 255, 0.7);
+  --sidebar-border: rgba(0, 0, 0, 0.05);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --accent: #007AFF;
+  --radius-app: 16px;
+  --ui-blur: blur(25px);
+  --ui-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+  --ui-border: 0.5px solid rgba(255, 255, 255, 0.4);
+  --font-app: '-apple-system', 'BlinkMacSystemFont', sans-serif;
+}
+
+/* 🧊 2. Neumorphic Soft (Concave/Convex Depth) */
+[data-theme='neumorphic'] {
+  --bg-app: #E0E5EC;
+  --bg-sidebar: #E0E5EC;
+  --card-bg: #E0E5EC;
+  --accent: #5551FF;
+  --text-main: #44474B;
+  --text-muted: #8E9296;
+  --radius-app: 32px;
+  --ui-depth: inset 6px 6px 12px #B8B9BE, inset -6px -6px 12px #FFFFFF;
+  --ui-shadow: 9px 9px 16px rgb(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+  --ui-border: none;
+}
+
+/* 🏁 3. Brutalist Sharp (High Contrast Hard Edges) */
+[data-theme='brutalist'] {
+  --bg-app: #FFFFFF;
+  --bg-sidebar: #FFDE59;
+  --card-bg: #FFFFFF;
+  --accent: #FF3131;
+  --text-main: #000000;
+  --radius-app: 0px;
+  --ui-shadow: 8px 8px 0px #000000;
+  --ui-border: 3px solid #000000;
+  --font-app: 'Inter', sans-serif;
+}
+
+/* 🌌 4. Cyber Neon (Fluorescent Dark) */
+[data-theme='cyber'] {
+  --bg-app: #050505;
+  --bg-sidebar: #0A0A0A;
+  --card-bg: #0D0D12;
+  --accent: #00F3FF;
+  --text-main: #FFFFFF;
+  --text-muted: #8B8B9E;
+  --radius-app: 12px;
+  --ui-border: 1px solid #00F3FF;
+  --ui-glow: 0 0 15px rgba(0, 243, 255, 0.4);
+  --ui-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+}
+
+/* 🏢 5. Corporate Swiss (Grid & Precision) */
+[data-theme='swiss'] {
+  --bg-app: #F5F5F7;
+  --bg-sidebar: #FFFFFF;
+  --accent: #000000;
+  --radius-app: 4px;
+  --ui-border: 1px solid #D1D1D6;
+  --ui-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --font-app: 'Inter', sans-serif;
+}
+
+/* 👑 6. Royal Luxury (Midnight & Gold) */
+[data-theme='gold'] {
+  --bg-app: #08080C;
+  --bg-sidebar: #0A0A0F;
+  --card-bg: #0F0F1A;
+  --accent: #C5A059;
+  --text-main: #F4F4F8;
+  --radius-app: 40px;
+  --ui-border: 1px solid rgba(197, 160, 89, 0.2);
+  --ui-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* 📟 7. Terminal Matrix (CRT Retro) */
+[data-theme='matrix'] {
+  --bg-app: #000000;
+  --bg-sidebar: #050505;
+  --card-bg: #000000;
+  --accent: #00FF41;
+  --text-main: #00FF41;
+  --text-muted: rgba(0, 255, 65, 0.5);
+  --radius-app: 0px;
+  --ui-border: 1px solid #00FF41;
+  --font-app: 'Space Grotesk', monospace;
+  --ui-glow: 0 0 5px rgba(0, 255, 65, 0.5);
+}
+
+/* 📜 8. Paper Ledger (Vintage Ink) */
+[data-theme='ledger'] {
+  --bg-app: #FDFBF7;
+  --bg-sidebar: #F7F3ED;
+  --card-bg: #FFFFFF;
+  --accent: #4A3728;
+  --text-main: #2C1E16;
+  --radius-app: 0px;
+  --ui-border: 1px solid #E5E1D8;
+  --ui-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
+  --font-app: 'Georgia', serif;
+}
+
+/* 🌙 9. Matte Stealth (No Reflections) */
+[data-theme='stealth'] {
+  --bg-app: #121212;
+  --bg-sidebar: #121212;
+  --card-bg: #1A1A1A;
+  --accent: #333333;
+  --text-main: #888888;
+  --radius-app: 4px;
+  --ui-border: 1px solid #222222;
+  --ui-shadow: none;
+}
+
+/* 🌊 10. Liquid Flow (Organic Gradients) */
+[data-theme='liquid'] {
+  --bg-app: #FFFFFF;
+  --bg-sidebar: #F8F9FF;
+  --accent: #6366F1;
+  --radius-app: 9999px;
+  --ui-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.2);
+  --ui-border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+/* 🍎 11. Material You (Dynamic Android) */
+[data-theme='material'] {
+  --bg-app: #FEFBFF;
+  --bg-sidebar: #F3EDF7;
+  --accent: #6750A4;
+  --radius-app: 28px;
+  --ui-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --ui-border: none;
+}
+
+/* 🪟 12. Windows Fluent (Acrylic & Depth) */
+[data-theme='fluent'] {
+  --bg-app: #F3F3F3;
+  --bg-sidebar: rgba(255, 255, 255, 0.6);
+  --accent: #0078D4;
+  --radius-app: 8px;
+  --ui-blur: blur(20px);
+  --ui-border: 1px solid rgba(0, 0, 0, 0.05);
+  --ui-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 🛸 1Cyberpunk 2077 (Glitch & Yellow) */
+[data-theme='glitch'] {
+  --bg-app: #FCEE09;
+  --bg-sidebar: #000000;
+  --card-bg: #000000;
+  --text-main: #FFFFFF;
+  --accent: #3FEEE6;
+  --radius-app: 0px;
+  --ui-border: 4px solid #000000;
+  --ui-shadow: 10px -10px 0px #3FEEE6;
+}
+
+/* 💎 14. Diamond Glass (Ultra Premium) */
+[data-theme='diamond'] {
+  --bg-app: #FFFFFF;
+  --bg-sidebar: rgba(255, 255, 255, 0.1);
+  --accent: #B9E2FE;
+  --radius-app: 32px;
+  --ui-blur: blur(40px);
+  --ui-border: 1px solid rgba(255, 255, 255, 0.8);
+  --ui-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+}
+
+/* 🧪 15. Laboratory (Minimalist Grid) */
+[data-theme='lab'] {
+  --bg-app: #FFFFFF;
+  --bg-sidebar: #F9FAFB;
+  --accent: #6366F1;
+  --radius-app: 0px;
+  --ui-border: 1px solid #E5E7EB;
+  --ui-shadow: none;
+  --bg-image: radial-gradient(#E5E7EB 1px, transparent 1px);
+  --bg-size: 20px 20px;
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-app);
   background-color: var(--bg-app);
+  background-image: var(--bg-image, none);
+  background-size: var(--bg-size, auto);
   color: var(--text-main);
-  @apply antialiased selection:bg-indigo-100 selection:text-indigo-900;
+  transition: all var(--transition-speed) ease;
+  @apply antialiased;
 }
 
 @layer components {
+
+  /* The Universal Skin Component */
   .premium-card {
-    @apply bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800/50 transition-all duration-300;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    background-color: var(--card-bg);
+    border-radius: var(--radius-app);
+    border: var(--ui-border);
+    box-shadow: var(--ui-shadow);
+    backdrop-filter: var(--ui-blur);
+    -webkit-backdrop-filter: var(--ui-blur);
+    box-shadow: var(--ui-shadow), var(--ui-glow);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
   }
 
-  .glass-panel {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800/50;
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: var(--ui-depth);
+    pointer-events: none;
+    z-index: 1;
   }
 
-  .stat-value {
-    @apply text-3xl font-bold tracking-tight text-slate-900 dark:text-white italic;
+  .glass-sidebar {
+    background-color: var(--bg-sidebar);
+    backdrop-filter: var(--ui-blur);
+    -webkit-backdrop-filter: var(--ui-blur);
+    border-right: var(--ui-border);
+    box-shadow: var(--ui-shadow);
+    transition: all var(--transition-speed) ease;
   }
 
-  .trend-up {
-    @apply text-emerald-500 font-bold text-xs flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full;
+  .nav-link-active {
+    background-color: var(--sidebar-active);
+    color: var(--accent);
+    font-weight: 700;
+    box-shadow: var(--ui-depth);
   }
 
-  .trend-down {
-    @apply text-rose-500 font-bold text-xs flex items-center gap-1 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-full;
-  }
-
-  .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/20 active:scale-95 transition-all;
+  .btn-nextgen {
+    background-color: var(--accent);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: calc(var(--radius-app) * 0.5);
+    border: var(--ui-border);
+    box-shadow: var(--ui-shadow);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    transition: var(--transition-speed) ease;
+    @apply shadow-lg active:scale-95;
   }
 }
 
@@ -71,35 +296,12 @@ body {
   @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700;
 }
 
-/* Animations */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
+/* Common Platform Specifics */
+[data-theme='matrix'] * {
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.8);
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-slow-spin {
-  animation: spin 12s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+[data-theme='matrix'] ::selection {
+  background: #00FF41;
+  color: black;
 }

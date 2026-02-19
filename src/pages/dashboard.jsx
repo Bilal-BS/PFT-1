@@ -16,6 +16,8 @@ export default function Dashboard() {
     const [currentView, setCurrentView] = useState('default')
     const [searchParams, setSearchParams] = useSearchParams()
 
+    const [error, setError] = useState(null)
+
     useEffect(() => {
         fetchDashboardData()
     }, [])
@@ -37,6 +39,7 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
         try {
             setLoading(true)
+            setError(null)
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
@@ -45,10 +48,15 @@ export default function Dashboard() {
                 supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).single()
             ])
 
+            if (profileRes.error) throw profileRes.error
+            // Subscription might not exist yet if trigger failed, but let's be strict for debugging
+            // if (subRes.error) throw subRes.error 
+
             setProfile(profileRes.data)
             setSubscription(subRes.data)
         } catch (error) {
-            console.error('Error:', error)
+            console.error('Error fetching dashboard:', error)
+            setError(error.message || 'Failed to load dashboard data')
         } finally {
             setLoading(false)
         }
@@ -58,6 +66,19 @@ export default function Dashboard() {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-white text-slate-900">
+                <div className="text-center">
+                    <h2 className="text-2xl font-black mb-4">Dashboard Error</h2>
+                    <p className="text-red-600 mb-6">{error}</p>
+                    <button onClick={fetchDashboardData} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Retry</button>
+                    <button onClick={() => supabase.auth.signOut()} className="ml-4 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300">Sign Out</button>
+                </div>
             </div>
         )
     }

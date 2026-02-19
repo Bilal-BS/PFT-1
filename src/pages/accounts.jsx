@@ -131,7 +131,18 @@ function AccountCard({ account, baseCurrency, rates, onDelete }) {
             </div>
 
             <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{account.type || 'General'}</span>
+                <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{account.type || 'General'}</span>
+                    {account.zakat_applicable && (
+                        <div className="flex flex-col items-end">
+                            <span className="text-[9px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full tracking-widest">Zakatable</span>
+                            <span className="text-[7px] font-bold text-emerald-400/80 uppercase tracking-tighter mt-0.5">
+                                {account.zakat_treatment === 'trading_inventory' ? 'Trading Inventory' :
+                                    account.zakat_treatment === 'non_zakatable' ? 'Long-Term Asset' : 'Liquid Asset'}
+                            </span>
+                        </div>
+                    )}
+                </div>
                 <h3 className="text-xl font-bold text-slate-900 truncate">{account.name}</h3>
             </div>
 

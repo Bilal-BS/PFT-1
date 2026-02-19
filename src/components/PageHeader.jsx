@@ -2,10 +2,16 @@ import React from 'react';
 
 const PageHeader = ({ title, description, actions, children }) => {
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
             <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">{title}</h1>
-                {description && <p className="text-slate-500 dark:text-slate-400 mt-1">{description}</p>}
+                <h1 className="text-4xl font-black text-[var(--text-main)] tracking-tighter mb-1 italic">
+                    {title}<span className="text-[var(--accent)]">.</span>
+                </h1>
+                {description && (
+                    <p className="text-[var(--text-muted)] font-bold text-sm uppercase tracking-widest opacity-60">
+                        {description}
+                    </p>
+                )}
                 {children}
             </div>
             {actions && (

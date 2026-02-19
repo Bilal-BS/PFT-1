@@ -88,39 +88,51 @@ export default function Currencies() {
     }, [rates, filterCurrency, filterStartDate, filterEndDate]);
 
     const handleSync = async () => {
-        setIsSyncing(true)
-        const { data: { user } } = await supabase.auth.getUser()
-        await new Promise(r => setTimeout(r, 1500))
+        try {
+            setIsSyncing(true)
+            const { data: { user } } = await supabase.auth.getUser()
 
-        const today = new Date().toISOString().split('T')[0]
-        let mockRates = []
+            // Check if table exists first (soft check by selecting 1 row)
+            const { error: checkError } = await supabase.from('exchange_rates').select('id').limit(1)
+            if (checkError && checkError.code === '42P01') { // Undefined table
+                throw new Error("Missing 'exchange_rates' table. Please run the update script.")
+            }
 
-        if (baseCurrency === 'LKR') {
-            mockRates = [
-                { from_currency: 'USD', to_currency: 'LKR', rate: 293 + Math.random() * 5, rate_date: today, user_id: user.id },
-                { from_currency: 'EUR', to_currency: 'LKR', rate: 318 + Math.random() * 5, rate_date: today, user_id: user.id },
-                { from_currency: 'GBP', to_currency: 'LKR', rate: 375 + Math.random() * 5, rate_date: today, user_id: user.id },
-                { from_currency: 'AED', to_currency: 'LKR', rate: 80 + Math.random() * 2, rate_date: today, user_id: user.id },
-                { from_currency: 'AUD', to_currency: 'LKR', rate: 192 + Math.random() * 3, rate_date: today, user_id: user.id },
-            ]
-        } else if (baseCurrency === 'USD') {
-            mockRates = [
-                { from_currency: 'EUR', to_currency: 'USD', rate: 1.08 + Math.random() * 0.02, rate_date: today, user_id: user.id },
-                { from_currency: 'GBP', to_currency: 'USD', rate: 1.27 + Math.random() * 0.02, rate_date: today, user_id: user.id },
-                { from_currency: 'JPY', to_currency: 'USD', rate: 0.0065 + Math.random() * 0.0001, rate_date: today, user_id: user.id },
-            ]
-        } else {
-            mockRates = [
-                { from_currency: 'USD', to_currency: baseCurrency, rate: 10 + Math.random(), rate_date: today, user_id: user.id },
-            ]
+            await new Promise(r => setTimeout(r, 1500))
+
+            const today = new Date().toISOString().split('T')[0]
+            let mockRates = []
+
+            if (baseCurrency === 'LKR') {
+                mockRates = [
+                    { from_currency: 'USD', to_currency: 'LKR', rate: 293 + Math.random() * 5, rate_date: today, user_id: user.id },
+                    { from_currency: 'EUR', to_currency: 'LKR', rate: 318 + Math.random() * 5, rate_date: today, user_id: user.id },
+                    { from_currency: 'GBP', to_currency: 'LKR', rate: 375 + Math.random() * 5, rate_date: today, user_id: user.id },
+                    { from_currency: 'AED', to_currency: 'LKR', rate: 80 + Math.random() * 2, rate_date: today, user_id: user.id },
+                    { from_currency: 'AUD', to_currency: 'LKR', rate: 192 + Math.random() * 3, rate_date: today, user_id: user.id },
+                ]
+            } else if (baseCurrency === 'USD') {
+                mockRates = [
+                    { from_currency: 'EUR', to_currency: 'USD', rate: 1.08 + Math.random() * 0.02, rate_date: today, user_id: user.id },
+                    { from_currency: 'GBP', to_currency: 'USD', rate: 1.27 + Math.random() * 0.02, rate_date: today, user_id: user.id },
+                    { from_currency: 'JPY', to_currency: 'USD', rate: 0.0065 + Math.random() * 0.0001, rate_date: today, user_id: user.id },
+                ]
+            } else {
+                mockRates = [
+                    { from_currency: 'USD', to_currency: baseCurrency, rate: 10 + Math.random(), rate_date: today, user_id: user.id },
+                ]
+            }
+
+            const { error } = await supabase.from('exchange_rates').insert(mockRates)
+            if (error) throw error
+
+            await fetchCurrencyData()
+        } catch (error) {
+            console.error('Sync failed:', error)
+            alert(error.message || "Failed to sync rates. Check database.")
+        } finally {
+            setIsSyncing(false)
         }
-
-        for (const r of mockRates) {
-            await supabase.from('exchange_rates').insert(r)
-        }
-
-        await fetchCurrencyData()
-        setIsSyncing(false)
     }
 
     const handleAddRate = async (e) => {
@@ -192,7 +204,7 @@ export default function Currencies() {
                             className={`group px-6 py-4 rounded-2xl border transition-all flex items-center gap-3 ${isSyncing ? 'bg-slate-100 border-slate-200 text-slate-400' : 'bg-slate-900 border-slate-900 text-white hover:bg-indigo-600 hover:border-indigo-600 shadow-xl active:scale-95'}`}
                         >
                             <RefreshCw className={isSyncing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} size={20} />
-                            <span className="text-xs font-black uppercase tracking-widest">{isSyncing ? 'Processing...' : 'Sync Central Bank'}</span>
+                            <span className="text-xs font-black uppercase tracking-widest">{isSyncing ? 'Processing...' : 'Update Buying Rate'}</span>
                         </button>
                     </div>
                 )}
@@ -205,18 +217,25 @@ export default function Currencies() {
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight">Active Currencies</h3>
                         <button onClick={() => setShowConfig(false)} className="text-slate-400 hover:text-slate-900"><X size={24} /></button>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div className="max-h-[400px] overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                         {CURRENCIES.map(curr => (
                             <button
                                 key={curr.code}
                                 onClick={() => toggleCurrencyStatus(curr.code)}
-                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${activeCurrencies.includes(curr.code) ? 'border-indigo-600 bg-indigo-50/30' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+                                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${activeCurrencies.includes(curr.code) ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-100 bg-white hover:bg-slate-50'}`}
                             >
-                                <div className="flex flex-col items-start">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">{curr.code}</span>
-                                    <span className="text-xs font-bold truncate max-w-[100px]">{curr.name}</span>
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-xs ${activeCurrencies.includes(curr.code) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                        {curr.code}
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="block text-sm font-bold text-slate-900">{curr.name}</span>
+                                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{activeCurrencies.includes(curr.code) ? 'Active' : 'Inactive'}</span>
+                                    </div>
                                 </div>
-                                {activeCurrencies.includes(curr.code) ? <Eye size={16} /> : <EyeOff size={16} />}
+                                <div className={`p-2 rounded-lg ${activeCurrencies.includes(curr.code) ? 'text-indigo-600 bg-white' : 'text-slate-300'}`}>
+                                    {activeCurrencies.includes(curr.code) ? <Eye size={18} /> : <EyeOff size={18} />}
+                                </div>
                             </button>
                         ))}
                     </div>

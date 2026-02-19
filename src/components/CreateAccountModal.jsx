@@ -8,6 +8,8 @@ export default function CreateAccountModal({ isOpen, onClose, onAdded }) {
     const [type, setType] = useState('bank')
     const [balance, setBalance] = useState('0')
     const [currency, setCurrency] = useState('LKR')
+    const [isZakatable, setIsZakatable] = useState(false)
+    const [zakatTreatment, setZakatTreatment] = useState('zakatable')
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e) => {
@@ -19,7 +21,9 @@ export default function CreateAccountModal({ isOpen, onClose, onAdded }) {
             name,
             type,
             balance: parseFloat(balance),
-            currency
+            currency,
+            zakat_applicable: isZakatable,
+            zakat_treatment: zakatTreatment
         })
 
         if (error) {
@@ -91,6 +95,34 @@ export default function CreateAccountModal({ isOpen, onClose, onAdded }) {
                             onChange={(e) => setBalance(e.target.value)}
                             className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition font-black text-2xl text-slate-900"
                         />
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                        <input
+                            type="checkbox"
+                            checked={isZakatable}
+                            onChange={(e) => setIsZakatable(e.target.checked)}
+                            className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
+                        />
+                        <div className="flex-1">
+                            <p className="text-xs font-black text-slate-800 uppercase tracking-wide">Zakatable Asset</p>
+                            <p className="text-[10px] font-bold text-emerald-600 mb-3">Include in annual wealth tax calculation?</p>
+
+                            {isZakatable && (
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase text-emerald-700 tracking-[0.1em] mb-1">Calculation Method</label>
+                                    <select
+                                        value={zakatTreatment}
+                                        onChange={(e) => setZakatTreatment(e.target.value)}
+                                        className="w-full bg-white border border-emerald-100 rounded-xl px-3 py-1.5 text-[10px] font-bold text-emerald-800 outline-none"
+                                    >
+                                        <option value="zakatable">Liquid Asset / Cash</option>
+                                        <option value="trading_inventory">Trading Inventory (Selling Price)</option>
+                                        <option value="non_zakatable">Long-Term Investment (Capital Only)</option>
+                                    </select>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex gap-4 pt-4">
