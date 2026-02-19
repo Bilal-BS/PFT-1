@@ -21,6 +21,7 @@ const HIJRI_MONTHS = [
 export default function Settings() {
     const [profile, setProfile] = useState(null)
     const [subscription, setSubscription] = useState(null)
+    const [availablePlans, setAvailablePlans] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [editMode, setEditMode] = useState(false)
@@ -48,10 +49,11 @@ export default function Settings() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            const [profileRes, subRes, zakatRes] = await Promise.all([
+            const [profileRes, subRes, zakatRes, plansRes] = await Promise.all([
                 supabase.from('profiles').select('*').eq('id', user.id).single(),
                 supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).single(),
-                supabase.from('zakat_settings').select('*').eq('user_id', user.id).maybeSingle()
+                supabase.from('zakat_settings').select('*').eq('user_id', user.id).maybeSingle(),
+                supabase.from('plans').select('*').order('price', { ascending: true })
             ])
 
             if (profileRes.data) {
@@ -63,6 +65,7 @@ export default function Settings() {
             }
             setSubscription(subRes.data)
             setZakatSettings(zakatRes.data)
+            setAvailablePlans(plansRes.data || [])
         } catch (error) {
             console.error('Settings load error:', error)
         } finally {
@@ -165,7 +168,8 @@ export default function Settings() {
         </div>
     )
 
-    const currentPlanId = subscription?.plan_id || 'plan-free'
+    const freePlan = availablePlans.find(p => p.price === 0)
+    const currentPlanId = subscription?.plan_id || freePlan?.id
 
     return (
         <div className="p-4 lg:p-8 space-y-8 bg-[#F9FAFB]">
@@ -702,12 +706,14 @@ export default function Settings() {
                             </div>
                         </div>
 
+
+
+                        // ... existing helper functions ...
+
+                        // ... inside return ...
+
                         <div className="space-y-3 mb-8">
-                            {[
-                                { id: 'plan-std', name: 'Standard', desc: 'Basic Ledger & 1 Workspace' },
-                                { id: 'plan-pro', name: 'Pro', desc: 'Architect Mode + Multi-Currency' },
-                                { id: 'plan-ult', name: 'Ultimate', desc: 'Enterprise Logic & Unlimited Nodes' }
-                            ].map(p => (
+                            {availablePlans.map(p => (
                                 <div
                                     key={p.id}
                                     onClick={() => handleUpgradePlan(p.id)}
@@ -715,7 +721,7 @@ export default function Settings() {
                                 >
                                     <div>
                                         <p className="font-black text-xs text-slate-900">{p.name}</p>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{p.desc}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{formatCurrency(p.price)}/mo</p>
                                     </div>
                                     {currentPlanId === p.id ? (
                                         <span className="text-[9px] font-black text-indigo-600 uppercase bg-indigo-50 px-3 py-1 rounded-full">Active</span>
