@@ -51,7 +51,7 @@ export default function Settings() {
 
             const [profileRes, subRes, zakatRes, plansRes] = await Promise.all([
                 supabase.from('profiles').select('*').eq('id', user.id).single(),
-                supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).single(),
+                supabase.from('subscriptions').select('*, plans(*)').eq('user_id', user.id).limit(1).maybeSingle(),
                 supabase.from('zakat_settings').select('*').eq('user_id', user.id).maybeSingle(),
                 supabase.from('plans').select('*').order('price', { ascending: true })
             ])
