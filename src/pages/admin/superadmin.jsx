@@ -317,17 +317,26 @@ export default function SuperAdmin() {
                 {/* 4. Settings (Plans, Coupons, Logs - Placeholders) */}
                 {activeTab === 'settings' && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in duration-500">
-                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-indigo-100 transition-all cursor-pointer">
+                        <div
+                            onClick={() => alert("Manage Plans: This feature will allow modifying Plan prices and features. Coming soon!")}
+                            className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-indigo-100 transition-all cursor-pointer active:scale-95"
+                        >
                             <div className="mb-6 p-4 bg-indigo-50 text-indigo-600 rounded-3xl w-fit"><CreditCard size={32} /></div>
                             <h3 className="text-2xl font-black text-slate-900 mb-2">Manage Plans</h3>
                             <p className="text-slate-500 font-bold">Edit pricing and features for all 4 tiers.</p>
                         </div>
-                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-emerald-100 transition-all cursor-pointer">
+                        <div
+                            onClick={() => alert("System Logs: Audit trails are currently being recorded in the database. UI Viewer coming soon.")}
+                            className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-emerald-100 transition-all cursor-pointer active:scale-95"
+                        >
                             <div className="mb-6 p-4 bg-emerald-50 text-emerald-600 rounded-3xl w-fit"><Settings size={32} /></div>
                             <h3 className="text-2xl font-black text-slate-900 mb-2">System Logs</h3>
                             <p className="text-slate-500 font-bold">View audit trails and security events.</p>
                         </div>
-                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-amber-100 transition-all cursor-pointer">
+                        <div
+                            onClick={() => alert("Support Tickets: Ticket management module is under development.")}
+                            className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-amber-100 transition-all cursor-pointer active:scale-95"
+                        >
                             <div className="mb-6 p-4 bg-amber-50 text-amber-600 rounded-3xl w-fit"><AlertTriangle size={32} /></div>
                             <h3 className="text-2xl font-black text-slate-900 mb-2">Support Tickets</h3>
                             <p className="text-slate-500 font-bold">Manage help requests from users.</p>
