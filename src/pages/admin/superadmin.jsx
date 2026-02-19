@@ -19,6 +19,7 @@ export default function SuperAdmin() {
     const [activeTab, setActiveTab] = useState('users') // 'users', 'requests', 'plans', 'rates'
     const [searchQuery, setSearchQuery] = useState('')
     const [editingPlan, setEditingPlan] = useState(null)
+    const [editingSubscription, setEditingSubscription] = useState(null)
 
     useEffect(() => {
         fetchAdminData()
@@ -101,6 +102,27 @@ export default function SuperAdmin() {
     const toggleUserActiveState = async (userId, currentState) => {
         await supabase.from('user_status').update({ is_active: !currentState }).eq('user_id', userId)
         fetchAdminData()
+    }
+
+    const handleUpdateSubscription = async () => {
+        if (!editingSubscription) return
+
+        const { error } = await supabase.from('subscriptions')
+            .update({
+                plan_id: editingSubscription.plan_id,
+                status: editingSubscription.status,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', editingSubscription.user_id)
+
+        if (error) {
+            console.error("Failed to update subscription:", error)
+            alert("Failed to update subscription.")
+        } else {
+            setEditingSubscription(null)
+            fetchAdminData()
+            alert("Subscription updated successfully.")
+        }
     }
 
     return (
@@ -192,6 +214,12 @@ export default function SuperAdmin() {
                                                             {user.plan_id?.replace('plan-', '')}
                                                         </span>
                                                         <span className="text-[10px] font-bold text-slate-400 italic">Subscription ID: {user.id.slice(0, 8)}</span>
+                                                        <button
+                                                            onClick={() => setEditingSubscription({ user_id: user.id, plan_id: user.plan_id, status: user.status })}
+                                                            className="text-[10px] font-black uppercase text-indigo-600 hover:underline text-left"
+                                                        >
+                                                            Edit Subscription
+                                                        </button>
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-6">
@@ -392,6 +420,59 @@ export default function SuperAdmin() {
                     )}
                 </div>
             </div>
+
+            {/* Edit Subscription Modal */}
+            {editingSubscription && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl">
+                        <h3 className="text-2xl font-black text-slate-900 mb-6">Edit Subscription</h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">Plan Tier</label>
+                                <select
+                                    value={editingSubscription.plan_id || ''}
+                                    onChange={(e) => setEditingSubscription({ ...editingSubscription, plan_id: e.target.value })}
+                                    className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    {plans.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} ({formatCurrency(p.price)})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black uppercase text-slate-400 tracking-widest mb-2">Status</label>
+                                <select
+                                    value={editingSubscription.status || 'active'}
+                                    onChange={(e) => setEditingSubscription({ ...editingSubscription, status: e.target.value })}
+                                    className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="trial">Trial</option>
+                                    <option value="expired">Expired</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-8">
+                            <button
+                                onClick={() => setEditingSubscription(null)}
+                                className="flex-1 py-3 bg-slate-100 text-slate-500 rounded-2xl font-black transition hover:bg-slate-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateSubscription}
+                                className="flex-1 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

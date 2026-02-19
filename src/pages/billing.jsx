@@ -134,7 +134,7 @@ export default function Billing() {
 
                         <div className="mb-10">
                             <h3 className="text-3xl font-black text-slate-900 mb-1">{plan.name}</h3>
-                            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">SaaS Subscription</p>
+                            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">{plan.features?.description || 'SaaS Subscription'}</p>
                         </div>
 
                         <div className="mb-12 font-black text-slate-900">
@@ -143,16 +143,18 @@ export default function Billing() {
                         </div>
 
                         <div className="space-y-4 mb-12">
-                            {Object.entries(plan.features || {}).map(([key, val]) => (
-                                <div key={key} className="flex items-start gap-3 text-slate-600">
-                                    <div className="mt-1 p-1 bg-emerald-50 rounded-lg text-emerald-600 flex-shrink-0">
-                                        <CheckCircle size={14} />
+                            {Object.entries(plan.features || {})
+                                .filter(([key]) => key !== 'description')
+                                .map(([key, val]) => (
+                                    <div key={key} className="flex items-start gap-3 text-slate-600">
+                                        <div className="mt-1 p-1 bg-emerald-50 rounded-lg text-emerald-600 flex-shrink-0">
+                                            <CheckCircle size={14} />
+                                        </div>
+                                        <span className="text-sm font-bold capitalize leading-relaxed break-words">
+                                            {val === true ? '' : val.toString() + ' '} {key.replace(/_/g, ' ')}
+                                        </span>
                                     </div>
-                                    <span className="text-sm font-bold capitalize leading-relaxed break-words">
-                                        {val === true ? 'Unlimited' : val.toString()} {key.replace(/_/g, ' ')}
-                                    </span>
-                                </div>
-                            ))}
+                                ))}
                             <div className="flex items-start gap-3 text-slate-600">
                                 <div className="mt-1 p-1 bg-indigo-50 rounded-lg text-indigo-600 flex-shrink-0">
                                     <ShieldCheck size={14} />
