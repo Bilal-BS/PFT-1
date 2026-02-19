@@ -22,7 +22,8 @@ export default function AddInvestmentModal({ isOpen, onClose, onAdded }) {
         })
 
         if (error) {
-            alert("Error adding investment")
+            console.error("Investment creation error:", error)
+            alert(`Error adding investment: ${error.message}`)
         } else {
             onAdded()
             onClose()

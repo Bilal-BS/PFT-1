@@ -14,7 +14,7 @@ export default function Login() {
         e.preventDefault()
         setLoading(true)
         setError(null)
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         })
@@ -22,7 +22,34 @@ export default function Login() {
         if (error) {
             setError(error.message)
             setLoading(false)
-        } else {
+        } else if (data.user) {
+            try {
+                // Ensure profile exists (backup check)
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', data.user.id)
+                    .single()
+
+                if (!profileData) {
+                    // Create profile if it doesn't exist
+                    const { error: profileError } = await supabase.from('profiles').insert({
+                        id: data.user.id,
+                        full_name: data.user.user_metadata?.full_name || email.split('@')[0],
+                        role: 'user',
+                        base_currency: 'LKR'
+                    })
+                    
+                    if (profileError && profileError.code !== '23505') {
+                        console.error('Profile creation error:', profileError)
+                    }
+                    // Trigger will create user_status
+                }
+            } catch (err) {
+                console.error('Post-login setup error:', err)
+                // Continue even if setup fails
+            }
+
             navigate('/')
         }
     }

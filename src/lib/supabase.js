@@ -259,12 +259,45 @@ class MockSupabase {
 }
 
 import { createClient } from '@supabase/supabase-js'
+
+// Read Supabase connection values from environment variables
 const realUrl = import.meta.env.VITE_SUPABASE_URL;
 const realKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 let client;
 if (isDemo) {
+    // Keep mock for local/demo but prefer real when env vars provided
     client = new MockSupabase();
 } else {
-    client = createClient(realUrl, realKey);
+    // Create a real Supabase client. Realtime is available via the `channel` API.
+    client = createClient(realUrl, realKey, {
+        // keep default realtime behavior; you can pass additional options here if needed
+    });
 }
+
 export const supabase = client;
+
+// Realtime helper for components: subscribe to Postgres changes for a table
+// Usage: const sub = subscribeToTable('transactions', ['INSERT','UPDATE','DELETE'], payload => { ... });
+// Call `sub.unsubscribe()` to stop listening.
+export function subscribeToTable(table, events = ['INSERT', 'UPDATE', 'DELETE'], callback) {
+    if (!client || typeof client.channel !== 'function') {
+        console.warn('Realtime not available in demo mode or client not initialized.');
+        return { unsubscribe: () => { } };
+    }
+
+    const eventFilter = events.map(e => e.toLowerCase()).join(',');
+    const channel = client
+        .channel(`public:${table}`)
+        .on('postgres_changes', { event: eventFilter, schema: 'public', table }, (payload) => {
+            try { callback(payload); } catch (e) { console.error(e); }
+        })
+        .subscribe();
+
+    return {
+        channel,
+        unsubscribe: () => {
+            try { channel.unsubscribe(); } catch (e) { /* ignore */ }
+        }
+    };
+}

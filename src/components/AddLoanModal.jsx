@@ -25,7 +25,8 @@ export default function AddLoanModal({ isOpen, onClose, onAdded }) {
         })
 
         if (error) {
-            alert("Error adding loan")
+            console.error("Loan creation error:", error)
+            alert(`Error adding loan: ${error.message}`)
         } else {
             onAdded()
             onClose()

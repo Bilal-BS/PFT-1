@@ -75,6 +75,7 @@ export default function AddTransactionModal({ isOpen, onClose, onTransactionAdde
         })
 
         if (error) {
+            console.error('Transaction creation error:', error)
             alert('Error logging transaction: ' + error.message)
             setLoading(false)
             return

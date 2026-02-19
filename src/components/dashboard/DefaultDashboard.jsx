@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Wallet, TrendingUp, TrendingDown, ArrowUpRight, MoreHorizontal, PieChart as PieIcon, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../lib/utils';
@@ -12,7 +12,7 @@ const DefaultDashboard = () => {
   const [accounts, setAccounts] = useState([]);
   const [currency, setCurrency] = useState('LKR');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
